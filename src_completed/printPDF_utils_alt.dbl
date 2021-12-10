@@ -1,0 +1,366 @@
+;------------------------------------------------------------------------------
+; printPDF utility routines
+;------------------------------------------------------------------------------
+
+import HPdf
+
+;------------------------------------------------------------------------------
+
+subroutine DrawTextRC
+    req in  aPdfDoc     ,@HpdfDoc
+    req in  aPdfPage    ,@HPdfPage
+    req in  aRow        ,int
+    req in  aCol        ,int
+    req in  aText       ,string
+    opt in  aFontName   ,string
+    opt in  aFontSize   ,float
+    opt in  aRed        ,float
+    opt in  aGreen      ,float
+    opt in  aBlue       ,float
+    endparams
+
+record
+    myPageHeight        ,float
+    myPageWidth         ,float
+    myFontSize          ,float
+    myFontWidth         ,int
+    hPos                ,float
+    vPos                ,float
+    myRed               ,float
+    myGreen             ,float
+    myBlue              ,float
+    textWidth           ,float
+endrecord
+
+proc
+
+    xcall GetMetrics(aPdfPage, myFontSize, myFontWidth, myPageHeight, myPageWidth)
+
+    aPdfPage.GSave()
+
+    if(^passed(aFontName) || ^passed(aFontSize))
+    begin
+        data text_font ,@HpdfFont
+        data font_size ,float
+        if(^passed(aFontName) && aFontName.Length > 0) then
+            text_font = aPdfDoc.GetFont(aFontName, ^null)
+        else
+            text_font = aPdfPage.GetCurrentFont()
+        if(^passed(aFontSize) && aFontSize > 0) then
+            font_size = aFontSize
+        else
+            font_size = aPdfPage.GetCurrentFontSize()
+        aPdfPage.SetFontAndSize(text_font, font_size)
+    end
+
+    aPdfPage.BeginText()
+
+    textWidth = aPdfPage.TextWidth(aText)
+
+    hPos = 0
+    vPos = 0
+
+    using aCol select
+    (>0),
+        hPos = (aCol * myFontWidth * myFontSize) / 1000
+    (-1),
+        hPos = ((myPageWidth - textWidth) / 2)
+    endusing
+
+    using aRow select
+    (>0),
+        vPos = myPageHeight - (aRow * myFontSize)
+    (-1),
+        vPos = ((myPageHeight - myFontSize) / 2)
+    endusing
+
+    aPdfPage.MoveTextPos(hPos, vPos)
+
+    if(^passed(aRed) || ^passed(aGreen) || ^passed(aBlue))
+    begin
+        if(^passed(aRed)) then
+            myRed = aRed
+        else
+            myRed = 0.0
+        if(^passed(aGreen)) then
+            myGreen = aGreen
+        else
+            myGreen = 0.0
+        if(^passed(aBLue)) then
+            myBlue = aBLue
+        else
+            myBlue = 0.0
+
+        aPdfPage.SetRGBFill(myRed, myGreen, myBlue)
+    end
+
+    aPdfPage.ShowText(aText)
+
+    aPdfPage.EndText()
+
+    aPdfPage.GRestore()
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+
+subroutine DrawLineRC
+    req in  aPdfPage    ,@HPdfPage
+    req in  aFromRow    ,int
+    req in  aFromCol    ,int
+    req in  aToRow      ,int
+    req in  aToCol      ,int
+    opt in  aThickness  ,float
+    opt in  aRed        ,float
+    opt in  aGreen      ,float
+    opt in  aBlue       ,float
+    endparams
+
+record
+    myPageHeight        ,float
+    myFontSize          ,float
+    myFontWidth         ,int
+    hPos                ,float
+    vPos                ,float
+    myRed               ,float
+    myGreen             ,float
+    myBlue              ,float
+endrecord
+
+proc
+
+    xcall GetMetrics(aPdfPage, myFontSize, myFontWidth, myPageHeight)
+
+    if(^passed(aThickness) && aThickness >= 0) then
+        aPdfPage.SetLineWidth(aThickness)
+    else
+        aPdfPage.SetLineWidth(0.0)
+
+    hpos = (aFromCol * myFontWidth * myFontSize) / 1000
+    vpos = myPageHeight - (aFromRow * myFontSize)
+
+    aPdfPage.MoveTo(hPos, vPos)
+
+    hpos = (aToCol * myFontWidth * myFontSize) / 1000
+    vpos = myPageHeight - (aToRow * myFontSize)
+
+    aPdfPage.LineTo(hPos, vPos)
+
+    if(^passed(aRed) || ^passed(aGreen) || ^passed(aBlue))
+    begin
+        if(^passed(aRed)) then
+            myRed = aRed
+        else
+            myRed = 0.0
+        if(^passed(aGreen)) then
+            myGreen = aGreen
+        else
+            myGreen = 0.0
+        if(^passed(aBLue)) then
+            myBlue = aBLue
+        else
+            myBlue = 0.0
+        aPdfPage.SetRGBStroke(myRed, myGreen, myBlue)
+    end
+
+    aPdfPage.Stroke()
+
+    if(^passed(aRed) || ^passed(aGreen) || ^passed(aBlue))
+        aPdfPage.SetRGBStroke(0.0, 0.0, 0.0)
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+
+subroutine DrawRectRC
+    req in  aPdfPage    ,@HPdfPage
+    req in  aFromRow    ,int
+    req in  aFromCol    ,int
+    req in  aToRow      ,int
+    req in  aToCol      ,int
+    opt in  aFill       ,int    ;0=stroke/1=fill/2=fillStroke
+    opt in  aThickness  ,float
+    opt in  aRed        ,float
+    opt in  aGreen      ,float
+    opt in  aBlue       ,float
+    endparams
+
+record
+    myPageHeight        ,float
+    myFontSize          ,float
+    myFontWidth         ,int
+    hPos                ,float
+    vPos                ,float
+    hLen                ,float
+    vLen                ,float
+    lineThickness       ,float
+    myRed               ,float
+    myGreen             ,float
+    myBlue              ,float
+endrecord
+
+proc
+
+    xcall GetMetrics(aPdfPage, myFontSize, myFontWidth, myPageHeight)
+
+    if(^passed(aThickness) && aThickness >= 0)
+        lineThickness = aThickness
+
+    hPos = (aFromCol * myFontWidth * myFontSize) / 1000
+    vPos = myPageHeight - (aFromRow * myFontSize)
+
+    hLen = ((aToCol * myFontWidth * myFontSize) / 1000) - hPos
+    vLen = (myPageHeight - (aToRow * myFontSize)) - vPos
+
+    if(^passed(aFill)) then
+    begin
+        if(^passed(aRed) || ^passed(aGreen) || ^passed(aBlue)) then
+        begin
+            if(^passed(aRed)) then
+                myRed = aRed
+            else
+                myRed = 0.0
+            if(^passed(aGreen)) then
+                myGreen = aGreen
+            else
+                myGreen = 0.0
+            if(^passed(aBLue)) then
+                myBlue = aBLue
+            else
+                myBlue = 0.0
+        end
+        else
+        begin
+            ;; use grey as no RGB components were provided
+            myRed = 0.5
+            myGreen = 0.5
+            myBlue = 0.5
+        end
+
+        using aFill select
+        (1),
+        begin
+            aPdfPage.SetRGBFill(myRed, myGreen, myBlue)
+            aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+            aPdfPage.Fill()
+            aPdfPage.SetRGBFill(0.0, 0.0, 0.0)
+        end
+        (2),
+        begin
+            aPdfPage.SetLineWidth(lineThickness)
+            aPdfPage.SetRGBStroke(myRed, myGreen, myBlue)
+            aPdfPage.SetRGBFill(myRed, myGreen, myBlue)
+            aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+            aPdfPage.FillStroke()
+            aPdfPage.SetRGBStroke(0.0, 0.0, 0.0)
+            aPdfPage.SetRGBFill(0.0, 0.0, 0.0)
+        end
+        (),
+        begin
+            aPdfPage.SetLineWidth(lineThickness)
+            aPdfPage.SetRGBStroke(myRed, myGreen, myBlue)
+            aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+            aPdfPage.Stroke()
+            aPdfPage.SetRGBStroke(0.0, 0.0, 0.0)
+        end
+        endusing
+    end
+    else
+    begin
+        aPdfPage.SetLineWidth(lineThickness)
+        aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+        aPdfPage.Stroke()
+    end
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+
+subroutine DrawImageRC
+    req in  aPdfDoc     ,@HpdfDoc
+    req in  aPdfPage    ,@HPdfPage
+    req in  aFilename   ,string
+    req in  aFromRow    ,int
+    req in  aFromCol    ,int
+    req in  aToRow      ,int
+    req in  aToCol      ,int
+    endparams
+
+record
+    myPageHeight        ,float
+    myFontSize          ,float
+    myFontWidth         ,int
+    hPos                ,float
+    vPos                ,float
+    hLen                ,float
+    vLen                ,float
+    pdfImage            ,@HPdfImage
+    fileType            ,a20
+endrecord
+
+proc
+
+    parse(aFilename, true,,,,, fileType)
+    locase fileType
+    using fileType select
+    ('.jpg','.jpeg'),
+        pdfImage = aPdfDoc.LoadJpegImageFromFile(aFilename)
+    ('.png'),
+        pdfImage = aPdfDoc.LoadPngImageFromFile(aFilename)
+    (),
+        throw new ApplicationException("Invalid file type (not png, jpg or jpeg)")
+    endusing
+
+    xcall GetMetrics(aPdfPage, myFontSize, myFontWidth, myPageHeight)
+
+    hPos = (aFromCol * myFontWidth * myFontSize) / 1000
+    vPos = myPageHeight - (aToRow * myFontSize)
+
+    hLen = ((aToCol * myFontWidth * myFontSize) / 1000) - hPos
+    vLen = (myPageHeight - (aFromRow * myFontSize)) - vPos
+
+    aPdfPage.DrawImage(pdfImage, hPos, vPos, hLen, vLen)
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+
+subroutine GetMetrics
+    req in  aPdfPage    ,@HpdfPage
+    opt out aFontSize   ,float
+    opt out aFontWidth  ,int
+    opt out aPageHeight ,float
+    opt out aPageWidth  ,float
+    endparams
+
+record
+    myPdfFont           ,@HpdfFont
+endrecord
+
+proc
+
+    myPdfFont = aPdfPage.GetCurrentFont()
+
+    if(^passed(aFontSize))
+        aFontSize = aPdfPage.GetCurrentFontSize()
+    if(^passed(aFontWidth))
+        aFontWidth = myPdfFont.GetUnicodeWidth(65)
+    if(^passed(aPageHeight))
+        aPageHeight = aPdfPage.GetHeight()
+    if(^passed(aPageWidth))
+        aPageWidth = aPdfPage.GetWidth()
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+

@@ -1,0 +1,115 @@
+
+
+
+
+                                                                                                        Account   ABC1234
+                                                                                                        Invoice   12345
+                                                                                                        Date      May 20th 2012
+
+
+
+        Synergex International Corp.                    Acme Software Development
+        2330 Gold Meadow Way                            11070 White Rock Rd
+        Gold River  CA 95670                            Rancho Cordova  CA 95670
+
+
+        SKU             Description                                     Quantity                Rate                      Due
+
+
+        PSW9            Professional Series Workbench                    10                     2999.00                 29990.00
+
+        RUN9            Synergy/DE Runtime                              100                      279.00                 27900.00
+
+        WRUN9           Synergy/DE ReportWriter Runtime                  10                       99.00                   990.00
+
+        XFPL9           Synergy/DE xfServerPlus Runtime                 100                        0.00                     0.00
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                Total                   58880.00
+
+                                                                                                Sales Tax                   0.00
+
+                                                                                                Total                   58880.00
+
+
+
+
+                                                                                                        Account   ABC1234
+                                                                                                        Invoice   12346
+                                                                                                        Date      May 20th 2012
+
+
+
+        Synergex International Corp.                    Acme Software Development
+        2330 Gold Meadow Way                            11070 White Rock Rd
+        Gold River  CA 95670                            Rancho Cordova  CA 95670
+
+
+        SKU             Description                                     Quantity                Rate                      Due
+
+
+        PSW9            Professional Series Workbench                     1                     2990.00                  2999.00
+
+        RUN9            Synergy/DE Runtime                               10                      279.00                  2790.00
+
+        WRUN9           Synergy/DE ReportWriter Runtime                   1                       99.00                    99.00
+
+        XFPL9           Synergy/DE xfServerPlus Runtime                  10                        0.00                     0.00
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                Total                    5888.00
+
+                                                                                                Sales Tax                   0.00
+
+                                                                                                Total                    5888.00
+

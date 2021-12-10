@@ -1,0 +1,68 @@
+;------------------------------------------------------------------------------
+; printPDF Draw page for HaruPDF
+;------------------------------------------------------------------------------
+
+import HPdf
+
+;------------------------------------------------------------------------------
+
+subroutine Haru_DrawPage
+    req inout   pdfDoc              ,@HpdfDoc
+    req inout   pdfPage             ,@HPdfPage
+    req in      pdfTemplate         ,a
+    req in      pageNumber          ,int
+    endparams
+
+proc
+
+    try
+    begin
+        using pdfTemplate select
+        ('invoice'),
+        begin
+            ;; draw box
+            xcall DrawRectRC(pdfPage, 04, 101, 08, 130,, 1.0)
+
+            ;; fill titles
+            xcall DrawRectRC(pdfPage, 15,  06, 17, 130, 1,, , 0.8, 0)
+            ;; box titles
+            xcall DrawRectRC(pdfPage, 15,  06, 17, 130,, 1.0)
+
+            ;; draw data table
+            xcall DrawRectRC(pdfPage, 17,  06, 52, 130,, 1.0)
+            xcall DrawLineRC(pdfPage, 15,  23, 52,  23, 1.0)
+            xcall DrawLineRC(pdfPage, 15,  70, 52,  70, 1.0)
+            xcall DrawLineRC(pdfPage, 15,  87, 52,  87, 1.0)
+            xcall DrawLineRC(pdfPage, 15, 112, 52, 112, 1.0)
+
+            ;; draw totals box
+            xcall DrawRectRC(pdfPage, 52,  92, 58, 130,, 1.0)
+            xcall DrawLineRC(pdfPage, 52, 112, 58, 112, 1.0)
+            xcall DrawLineRC(pdfPage, 54,  92, 54, 130, 1.0)
+            xcall DrawLineRC(pdfPage, 56,  92, 56, 130, 1.0)
+
+            ;; draw logo
+            xcall DrawImageRC(pdfDoc, pdfPage, 'dpc2012.png', 02, 006, 09, 030)
+
+
+            ;; continuation page
+            if(pageNumber > 1)
+            begin
+                ;; display continuation text (row 4, centered & blue)
+                xcall DrawTextRC(pdfDoc, pdfPage, 4, -1, 'Continuation...', 'Helvetica', 12, 0.0, 0.0, 0.8)
+            end
+        end
+        endusing
+    end
+    catch (ex ,@Exception)
+    begin
+        writes(1, "Haru_DrawPage:"+ex.Message)
+    end
+    endtry
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+

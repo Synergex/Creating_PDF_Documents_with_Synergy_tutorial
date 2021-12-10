@@ -1,0 +1,38 @@
+;------------------------------------------------------------------------------
+; printPDF - Draw page for HaruPDF
+;------------------------------------------------------------------------------
+
+import HPdf
+
+;------------------------------------------------------------------------------
+
+subroutine Haru_DrawPage
+    req inout   aPdfDoc             ,@HpdfDoc
+    req inout   aPdfPage            ,@HPdfPage
+    req in      pdfTemplate         ,a
+    req in      pageNumber          ,int
+    endparams
+
+proc
+
+    try
+    begin
+        using pdfTemplate select
+        (),
+        begin
+
+        end
+        endusing
+    end
+    catch (ex ,@Exception)
+    begin
+        writes(1, "Haru_DrawPage:"+ex.Message)
+    end
+    endtry
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+

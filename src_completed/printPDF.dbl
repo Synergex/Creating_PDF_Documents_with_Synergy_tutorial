@@ -1,0 +1,137 @@
+import HPdf
+
+;------------------------------------------------------------------------------
+
+function PrintPDF           ,i
+    req in      aPrintFile  ,a          ;; Print (text) file
+    opt inout   aPdfFile    ,a          ;; PDF filename
+    opt in      aPDFTemplate,a          ;; PDF Template name
+    endparams
+
+local record
+    ret_val                 ,i4         ;; function return value
+    pdfFile                 ,a256       ;; pdf filename
+    inChan                  ,i4         ;; print file channel
+endrecord
+
+proc
+    ret_val = 0
+    try
+    begin
+        data tmpLine            ,a256   ;; print file output print line
+        data tmpPos             ,i4     ;; position in tmpline
+        data inChar             ,a1     ;; character from print file
+
+        data pdfDoc             ,@HpdfDoc
+        data pdfFont            ,@HpdfFont
+        data pdfPage            ,@HpdfPage
+        data pageSize           ,HPdfPageSizes
+        data pageOrientation    ,HPdfPageDirection
+        data fontSize           ,float
+        data pageNum            ,int
+
+        inChan = %syn_freechn()
+        open(inChan, I, aPrintFile)
+
+        if(^passed(aPdfFile) && aPdfFile) then
+            pdfFile = aPdfFile
+        else
+        begin
+            data pNode          ,a256
+            data pDev           ,a256
+            data pDir           ,a256
+            data pName          ,a256
+            data pExt           ,a256
+
+            xcall parse(aPrintFile, 1, pNode, pDev, pDir, pName, pExt)
+
+            locase pExt
+            if(pExt == '.pdf')
+                throw new ApplicationException("Filename already has PDF extension")
+
+            pdfFile = %atrim(pNode)+%atrim(pDev)+%atrim(pDir)+%atrim(pName)+'.pdf'
+        end
+
+        ;; create new document
+        pdfDoc = new HPdfDoc()
+
+        ;; set font and page defaults
+        fontSize = 10.0
+        pdfFont = pdfDoc.GetFont('Courier', ^null)
+
+        pageSize = HPdfPageSizes.HPDF_PAGE_SIZE_LETTER
+        pageOrientation = HPdfPageDirection.HPDF_PAGE_LANDSCAPE
+
+        pdfPage = pdfDoc.AddPage(pageSize, pageOrientation)
+        if(^passed(aPDFTemplate) && aPDFTemplate)
+        begin
+            pageNum = 1
+            pdfPage.SetFontAndSize(pdfFont, fontSize)
+            xcall Haru_DrawPage(pdfDoc, pdfPage, aPDFTemplate, pageNum)
+        end
+        pdfPage.StartPageWithFont(pdfFont, fontSize)
+
+        clear tmpLine
+        tmpPos = 1
+        repeat
+        begin
+            gets(inChan, inChar, eof)
+            using (%decml(inChar)) select
+            (12),
+            begin
+                clear tmpLine
+                tmpPos = 1
+                pdfPage.EndText()
+
+                ;; start new page
+                pdfPage = pdfDoc.AddPage(pageSize, pageOrientation)
+                if(^passed(aPDFTemplate) && aPDFTemplate)
+                begin
+                    pageNum += 1
+                    pdfPage.SetFontAndSize(pdfFont, fontSize)
+                    xcall Haru_DrawPage(pdfDoc, pdfPage, aPDFTemplate, pageNum)
+                end
+                pdfPage.StartPageWithFont(pdfFont, fontSize)
+            end
+            (32 thru 126),
+            begin
+                tmpLine(tmpPos:1) = inChar
+                incr tmpPos
+            end
+            (13),
+                nop ;;ignore CR, as LF does the real work
+            (10),
+            begin
+                ;; write out print line
+                pdfPage.Writes((string)(%atrim(tmpLine)))
+                clear tmpLine
+                tmpPos = 1
+            end
+            endusing
+        end
+    eof,
+        ;; save document
+        pdfPage.EndText()
+        pdfDoc.SaveToFile(pdfFile)
+        clear pdfDoc
+    end
+    catch (ex ,@Exception)
+    begin
+        writes(1, "PRTPDF:"+ex.Message)
+        ret_val = 1
+    end
+    finally
+    begin
+        if(inChan)
+            close inChan
+    end
+    endtry
+
+    if(^passed(aPdfFile))
+            aPdfFile = pdfFile
+
+    freturn ret_val
+endfunction
+
+;------------------------------------------------------------------------------
+

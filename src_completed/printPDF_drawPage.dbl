@@ -1,0 +1,187 @@
+;------------------------------------------------------------------------------
+; printPDF Draw page for HaruPDF
+;------------------------------------------------------------------------------
+
+import HPdf
+
+;------------------------------------------------------------------------------
+
+subroutine Haru_DrawPage
+    req inout   aPdfDoc             ,@HpdfDoc
+    req inout   aPdfPage            ,@HPdfPage
+    req in      pdfTemplate         ,a
+    req in      pageNumber          ,int
+    endparams
+
+    record
+        myPdfFont           ,@HpdfFont
+        myPageHeight        ,float
+        myPageWidth         ,float
+        myFontSize          ,float
+        myFontWidth         ,int
+        hPos                ,float
+        vPos                ,float
+        hLen                ,float
+        vLen                ,float
+    endrecord
+
+proc
+
+    myPdfFont = aPdfPage.GetCurrentFont()
+
+    myFontSize = aPdfPage.GetCurrentFontSize()
+    myFontWidth = myPdfFont.GetUnicodeWidth(65)
+    myPageHeight = aPdfPage.GetHeight()
+    myPageWidth = aPdfPage.GetWidth()
+
+    try
+    begin
+        using pdfTemplate select
+        ('invoice'),
+        begin
+            ;; draw box
+            hPos =  (101 * myFontWidth * myFontSize) / 1000
+            vPos =  myPageHeight - (04 * myFontSize)
+            hLen = ((130 * myFontWidth * myFontSize) / 1000) - hPos
+            vLen = (myPageHeight - (08 * myFontSize)) - vPos
+            aPdfPage.SetLineWidth(1.0)
+            aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+            aPdfPage.Stroke()
+
+            ;; draw data table titles and fill with green background
+            hPos =  (06 * myFontWidth * myFontSize) / 1000
+            vPos =  myPageHeight - (15 * myFontSize)
+            hLen = ((130 * myFontWidth * myFontSize) / 1000) - hPos
+            vLen = (myPageHeight - (17 * myFontSize)) - vPos
+            aPdfPage.SetLineWidth(1.0)
+            aPdfPage.SetRGBStroke(0.0, 0.8, 0.0)
+            aPdfPage.SetRGBFill(0.0, 0.8, 0.0)
+            aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+            aPdfPage.FillStroke()
+            aPdfPage.SetRGBStroke(0.0, 0.0, 0.0)
+            aPdfPage.SetRGBFill(0.0, 0.0, 0.0)
+
+            ;; draw data table
+            hPos =  (06 * myFontWidth * myFontSize) / 1000
+            vPos =  myPageHeight - (17 * myFontSize)
+            hLen = ((130 * myFontWidth * myFontSize) / 1000) - hPos
+            vLen = (myPageHeight - (52 * myFontSize)) - vPos
+            aPdfPage.SetLineWidth(1.0)
+            aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+            aPdfPage.Stroke()
+
+            hpos = (23 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (15 * myFontSize)
+            aPdfPage.MoveTo(hPos, vPos)
+            hpos = (23 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (52 * myFontSize)
+            aPdfPage.LineTo(hPos, vPos)
+            aPdfPage.Stroke()
+
+            hpos = (70 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (15 * myFontSize)
+            aPdfPage.MoveTo(hPos, vPos)
+            hpos = (70 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (52 * myFontSize)
+            aPdfPage.LineTo(hPos, vPos)
+            aPdfPage.Stroke()
+
+            hpos = (87 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (15 * myFontSize)
+            aPdfPage.MoveTo(hPos, vPos)
+            hpos = (87 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (52 * myFontSize)
+            aPdfPage.LineTo(hPos, vPos)
+            aPdfPage.Stroke()
+
+            hpos = (112 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (15 * myFontSize)
+            aPdfPage.MoveTo(hPos, vPos)
+            hpos = (112 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (52 * myFontSize)
+            aPdfPage.LineTo(hPos, vPos)
+            aPdfPage.Stroke()
+
+            ;; draw totals box
+            hPos =  (92 * myFontWidth * myFontSize) / 1000
+            vPos =  myPageHeight - (52 * myFontSize)
+            hLen = ((130 * myFontWidth * myFontSize) / 1000) - hPos
+            vLen = (myPageHeight - (58 * myFontSize)) - vPos
+            aPdfPage.SetLineWidth(1.0)
+            aPdfPage.Rectangle(hPos, vPos, hLen, vLen)
+            aPdfPage.Stroke()
+
+            hpos = (112 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (52 * myFontSize)
+            aPdfPage.MoveTo(hPos, vPos)
+            hpos = (112 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (58 * myFontSize)
+            aPdfPage.LineTo(hPos, vPos)
+            aPdfPage.Stroke()
+
+            hpos = (92 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (54 * myFontSize)
+            aPdfPage.MoveTo(hPos, vPos)
+            hpos = (130 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (54 * myFontSize)
+            aPdfPage.LineTo(hPos, vPos)
+            aPdfPage.Stroke()
+
+            hpos = (92 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (56 * myFontSize)
+            aPdfPage.MoveTo(hPos, vPos)
+            hpos = (130 * myFontWidth * myFontSize) / 1000
+            vpos = myPageHeight - (56 * myFontSize)
+            aPdfPage.LineTo(hPos, vPos)
+            aPdfPage.Stroke()
+
+            ;; draw logo
+            begin
+                data pdfImage       ,@HPdfImage
+
+                pdfImage = aPdfDoc.LoadPngImageFromFile('dpc2012.png')
+
+                hPos = (06 * myFontWidth * myFontSize) / 1000
+                vPos = myPageHeight - (09 * myFontSize)
+                hLen = ((30 * myFontWidth * myFontSize) / 1000) - hPos
+                vLen = (myPageHeight - (02 * myFontSize)) - vPos
+                aPdfPage.DrawImage(pdfImage, hPos, vPos, hLen, vLen)
+            end
+
+            ;; continuation page
+            if(pageNumber > 1)
+            begin
+                data aText          ,a*     ,'Continued...'
+                data textWidth      ,float
+                data text_font      ,@HpdfFont
+
+                text_font = aPdfDoc.GetFont('Helvetica', ^null)
+
+                ;; display continuation text (row 4, centered & blue)
+                aPdfPage.GSave()
+                aPdfPage.SetFontAndSize(text_font, 12.0)
+                aPdfPage.BeginText()
+                textWidth = aPdfPage.TextWidth(aText)
+                vPos = myPageHeight - (04 * myFontSize)
+                hPos = ((myPageWidth - textWidth) / 2)
+                aPdfPage.MoveTextPos(hPos, vPos)
+                aPdfPage.SetRGBFill(0.0, 0.0, 0.8)
+                aPdfPage.ShowText(aText)
+                aPdfPage.EndText()
+                aPdfPage.GRestore()
+            end
+        end
+        endusing
+    end
+    catch (ex ,@Exception)
+    begin
+        writes(1, "Haru_DrawPage:"+ex.Message)
+    end
+    endtry
+
+    xreturn
+
+endsubroutine
+
+;------------------------------------------------------------------------------
+

@@ -1,0 +1,27 @@
+main
+
+external function
+    prtpdf              ,i
+endexternal
+
+record
+    sts                 ,i4
+    pdfFile             ,a256
+endrecord
+
+proc
+    open(1, O, 'TT:')
+
+    sts = PrintPDF('myDoc.ddf', pdfFile)
+
+    ;if(!sts)
+    ;    sts = %sendEmail(%atrim(emailAddress), pdfFile, 'application/pdf', "Requested PDF document")
+
+    if(sts)
+        accept(1, sts, done)
+
+done,
+    close 1
+    flags(7000000,1)
+    stop D_EXIT_SUCCESS
+endmain
